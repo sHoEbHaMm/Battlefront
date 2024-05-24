@@ -26,10 +26,6 @@
 			]
 		},
 		{
-			"Name": "GoMultiplayer",
-			"Enabled": false
-		},
-		{
 			"Name": "OnlineSubsystemSteam",
 			"Enabled": true
 		},
