@@ -4,6 +4,7 @@
 #include "ShooterCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -20,6 +21,8 @@ AShooterCharacter::AShooterCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 // Called when the game starts or when spawned
