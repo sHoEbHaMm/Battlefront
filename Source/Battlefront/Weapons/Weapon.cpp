@@ -32,6 +32,14 @@ AWeapon::AWeapon()
 
 }
 
+void AWeapon::ShowPickupWidget(bool bShowWidget)
+{
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(bShowWidget);
+	}
+}
+
 // Called when the game starts or when spawned
 void AWeapon::BeginPlay()
 {
@@ -56,9 +64,9 @@ void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	AShooterCharacter* shooterCharacter = Cast<AShooterCharacter>(otherActor);
 
-	if (shooterCharacter && PickupWidget)
+	if (shooterCharacter)
 	{
-		PickupWidget->SetVisibility(true);
+		shooterCharacter->SetOverlappingWeapon(this);
 	}
 }
 
@@ -67,9 +75,9 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	AShooterCharacter* shooterCharacter = Cast<AShooterCharacter>(otherActor);
 
-	if (shooterCharacter && PickupWidget)
+	if (shooterCharacter)
 	{
-		PickupWidget->SetVisibility(false);
+		shooterCharacter->SetOverlappingWeapon(NULL);
 	}
 }
 
@@ -77,6 +85,5 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent,
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
