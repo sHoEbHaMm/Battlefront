@@ -21,6 +21,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
 
 protected:
 
@@ -30,7 +31,7 @@ protected:
 	void moveRight(float value);
 	void turnAtRate(float value);
 	void lookUp(float value);
-
+	void EquipItem();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
@@ -47,6 +48,12 @@ private:
 
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* lastWeapon);
+
+	UPROPERTY(VisibleAnywhere)
+	class UCombatComponent* CombatComponent;
+
+	UFUNCTION(Server, Reliable)
+	void ServerEquipItem();
 
 public:	
 

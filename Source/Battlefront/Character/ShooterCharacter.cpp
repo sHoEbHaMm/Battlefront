@@ -8,6 +8,7 @@
 #include "Components/WidgetComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Battlefront/Weapons/Weapon.h"
+#include "Battlefront/GameComponents/CombatComponent.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -29,6 +30,9 @@ AShooterCharacter::AShooterCharacter()
 
 	OverheadDisplay = CreateDefaultSubobject<UWidgetComponent>(TEXT("PlayerNetRoleText"));
 	OverheadDisplay->SetupAttachment(RootComponent);
+
+	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	CombatComponent->SetIsReplicated(true);
 }
 
 // Called when the game starts or when spawned
@@ -51,6 +55,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ThisClass::Jump);
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ThisClass::EquipItem);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::moveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ThisClass::moveRight);
@@ -59,11 +64,22 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	
 }
 
+/* Replication of overlapping weapons on other clients */
 void AShooterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AShooterCharacter, OverlappingWeapon);
+	DOREPLIFETIME_CONDITION(AShooterCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
+void AShooterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (CombatComponent)
+	{
+		CombatComponent->shooterCharacter = this;
+	}
 }
 
 void AShooterCharacter::moveForward(float value)
@@ -96,6 +112,22 @@ void AShooterCharacter::lookUp(float value)
 	AddControllerPitchInput(value);
 }
 
+void AShooterCharacter::EquipItem()
+{
+	if (CombatComponent)
+	{
+		if (HasAuthority())
+		{
+			CombatComponent->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerEquipItem(); // Send the RPC to equip weapon
+		}
+
+	}
+}
+
 void AShooterCharacter::OnRep_OverlappingWeapon(AWeapon* lastWeapon)
 {
 	if (OverlappingWeapon)
@@ -103,9 +135,18 @@ void AShooterCharacter::OnRep_OverlappingWeapon(AWeapon* lastWeapon)
 		OverlappingWeapon->ShowPickupWidget(true);
 	}
 
+	/* If current overlapping weapon is null */
 	if (lastWeapon)
 	{
 		lastWeapon->ShowPickupWidget(false);
+	}
+}
+
+void AShooterCharacter::ServerEquipItem_Implementation()
+{
+	if (CombatComponent)
+	{
+		CombatComponent->EquipWeapon(OverlappingWeapon);
 	}
 }
 
