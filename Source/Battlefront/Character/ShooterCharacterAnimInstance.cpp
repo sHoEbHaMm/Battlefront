@@ -30,4 +30,10 @@ void UShooterCharacterAnimInstance::NativeUpdateAnimation(float deltaTime)
 	bIsInAir = shooterCharacter->GetCharacterMovement()->IsFalling();
 
 	bIsAccelerating = shooterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
+
+	bWeaponEquipped = shooterCharacter->isWeaponEquipped();
+
+	bIsCrouched = shooterCharacter->bIsCrouched;
+
+	bAiming = shooterCharacter->isAiming();
 }

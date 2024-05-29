@@ -33,6 +33,8 @@ AShooterCharacter::AShooterCharacter()
 
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatComponent->SetIsReplicated(true);
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 // Called when the game starts or when spawned
@@ -56,6 +58,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ThisClass::Jump);
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ThisClass::EquipItem);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ThisClass::Crouching);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ThisClass::Aiming);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ThisClass::StopAiming);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::moveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ThisClass::moveRight);
@@ -128,6 +133,35 @@ void AShooterCharacter::EquipItem()
 	}
 }
 
+void AShooterCharacter::Crouching()
+{
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
+
+}
+
+void AShooterCharacter::Aiming()
+{
+	if (CombatComponent)
+	{
+		CombatComponent->SetAiming(true);
+	}
+}
+
+void AShooterCharacter::StopAiming()
+{
+	if (CombatComponent)
+	{
+		CombatComponent->SetAiming(false);
+	}
+}
+
 void AShooterCharacter::OnRep_OverlappingWeapon(AWeapon* lastWeapon)
 {
 	if (OverlappingWeapon)
@@ -166,6 +200,16 @@ void AShooterCharacter::SetOverlappingWeapon(AWeapon* inWeapon)
 			OverlappingWeapon->ShowPickupWidget(true);
 		}
 	}
+}
+
+bool AShooterCharacter::isWeaponEquipped()
+{
+	return (CombatComponent && CombatComponent->equippedWeapon);
+}
+
+bool AShooterCharacter::isAiming()
+{
+	return(CombatComponent && CombatComponent->bIsAiming);
 }
 
 
